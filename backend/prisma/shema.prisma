@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  tasks     Task[]   @relation("AssignedTasks")
+  comments  Comment[]
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id           String   @id @default(uuid())
+  title        String
+  description  String?
+  status       String
+  priority     String
+  dueDate      DateTime?
+  tags         String[]
+  assignedToId String?
+  assignedTo   User?    @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  comments     Comment[]
+  files        File[]
+  isDeleted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  taskId    String
+  userId    String
+  task      Task     @relation(fields: [taskId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model File {
+  id       String @id @default(uuid())
+  filename String
+  path     String
+  taskId   String
+  task     Task   @relation(fields: [taskId], references: [id])
+}
